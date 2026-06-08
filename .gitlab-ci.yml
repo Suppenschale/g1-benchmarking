@@ -10,6 +10,8 @@ variables:
 
   run-benchmarks: &RUN_BENCHMARKS |
     echo "Running benchmarks"
+    cd awfy/benchmarks/Java
+    java -cp benchmarks.jar Harness Sieve 10 10000 | tee results.txt
 
 before_script:
   - sudo reown-project.sh || true
@@ -21,6 +23,7 @@ benchmark-y1:
   script:
     - *INSTALL_DEPS
     - *RUN_BENCHMARKS
+  artifacts: {paths: [awfy/benchmarks/Java/results.txt], expire_in: 1 week}
 
 benchmark-y2:
   stage: benchmark
@@ -28,6 +31,7 @@ benchmark-y2:
   script:
     - *INSTALL_DEPS
     - *RUN_BENCHMARKS
+  artifacts: {paths: [awfy/benchmarks/Java/results.txt], expire_in: 1 week}
 
 benchmark-y3:
   stage: benchmark
@@ -35,6 +39,7 @@ benchmark-y3:
   script:
     - *INSTALL_DEPS
     - *RUN_BENCHMARKS
+  artifacts: {paths: [awfy/benchmarks/Java/results.txt], expire_in: 1 week}
 
 benchmark-y4:
   stage: benchmark
@@ -42,6 +47,7 @@ benchmark-y4:
   script:
     - *INSTALL_DEPS
     - *RUN_BENCHMARKS
+  artifacts: {paths: [awfy/benchmarks/Java/results.txt], expire_in: 1 week}
 
 benchmark-z1:
   stage: benchmark
@@ -49,3 +55,4 @@ benchmark-z1:
   script:
     - *INSTALL_DEPS
     - *RUN_BENCHMARKS
+  artifacts: {paths: [awfy/benchmarks/Java/results.txt], expire_in: 1 week}
