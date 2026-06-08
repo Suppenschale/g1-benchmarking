@@ -11,6 +11,7 @@ variables:
   run-benchmarks: &RUN_BENCHMARKS |
     echo "Running benchmarks"
     cd awfy/benchmarks/Java
+    ant jar
     java -cp benchmarks.jar Harness Sieve 10 10000 | tee results.txt
 
 before_script:
