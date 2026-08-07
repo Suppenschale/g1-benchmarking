@@ -1,59 +1,13 @@
 stages:
   - benchmark
 
-variables:
-  PYTHONUNBUFFERED: "true"
-
-.shared-scripts:
-  install-deps: &INSTALL_DEPS |
-    echo "Installing any kind of dependencies"
-
-  run-benchmarks: &RUN_BENCHMARKS |
-    echo "Running benchmarks"
-    cd awfy/benchmarks/Java
-    ant jar
-    java -cp benchmarks.jar Harness Sieve 10 10000 | tee results.txt
-
 before_script:
   - sudo reown-project.sh || true
 
-
-benchmark-y1:
+benchmark-test:
   stage: benchmark
-  tags: [kent-yuria]
+  tags:
+    - kent-yuria
   script:
-    - *INSTALL_DEPS
-    - *RUN_BENCHMARKS
-  artifacts: {paths: [awfy/benchmarks/Java/results.txt], expire_in: 1 week}
-
-benchmark-y2:
-  stage: benchmark
-  tags: [kent-yuria2]
-  script:
-    - *INSTALL_DEPS
-    - *RUN_BENCHMARKS
-  artifacts: {paths: [awfy/benchmarks/Java/results.txt], expire_in: 1 week}
-
-benchmark-y3:
-  stage: benchmark
-  tags: [kent-yuria3]
-  script:
-    - *INSTALL_DEPS
-    - *RUN_BENCHMARKS
-  artifacts: {paths: [awfy/benchmarks/Java/results.txt], expire_in: 1 week}
-
-benchmark-y4:
-  stage: benchmark
-  tags: [kent-yuria4]
-  script:
-    - *INSTALL_DEPS
-    - *RUN_BENCHMARKS
-  artifacts: {paths: [awfy/benchmarks/Java/results.txt], expire_in: 1 week}
-
-benchmark-z1:
-  stage: benchmark
-  tags: [kent-zullie1]
-  script:
-    - *INSTALL_DEPS
-    - *RUN_BENCHMARKS
-  artifacts: {paths: [awfy/benchmarks/Java/results.txt], expire_in: 1 week}
+    - chmod +x benchmarks/test.sh
+    - ./benchmarks/test.sh
