@@ -1,31 +1,17 @@
 stages:
-  - build
   - benchmark
-
-
-variables:
-  JDK_DIR: "$CI_PROJECT_DIR/jdk"
-
-
-build-jdk:
-  stage: build
-  tags:
-    - kent-yuria
-  script:
-    - git clone --branch survivor https://github.com/Suppenschale/jdk.git jdk
-    - cd jdk
-    - bash configure --disable-alsa
-    - make images
-  artifacts:
-    paths:
-      - jdk/build/*/images/jdk
-    expire_in: 1 week
-
 
 benchmark:
   stage: benchmark
   tags:
     - kent-yuria
+
   script:
-    - chmod +x benchmarks/run.sh
-    - ./benchmarks/run.sh
+    - echo "Extracting custom JDK"
+    - tar -xzf jdk/my-jdk.tar.gz
+
+    - echo "Testing JDK"
+    - ./jdk/bin/java -version
+
+    - cd benchmarks
+    - ./run.sh

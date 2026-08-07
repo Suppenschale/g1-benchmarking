@@ -2,19 +2,11 @@
 
 set -e
 
-echo "===== Running HelloWorld test ====="
+JAVA=$CI_PROJECT_DIR/jdk/bin/java
+JAVAC=$CI_PROJECT_DIR/jdk/bin/javac
 
-# Find the JDK built in the previous CI stage
-JAVA=$(find "$CI_PROJECT_DIR/jdk/build" -path "*/images/jdk/bin/java" | head -n 1)
-JAVAC=$(find "$CI_PROJECT_DIR/jdk/build" -path "*/images/jdk/bin/javac" | head -n 1)
-
-echo "Using Java:"
+echo "Using:"
 $JAVA -version
 
-echo "Compiling HelloWorld.java"
-$JAVAC benchmarks/HelloWorld.java
-
-echo "Running HelloWorld:"
-$JAVA -cp benchmarks HelloWorld
-
-echo "===== Test finished ====="
+$JAVAC HelloWorld.java
+$JAVA HelloWorld
