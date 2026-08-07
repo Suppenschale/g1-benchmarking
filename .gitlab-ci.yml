@@ -12,6 +12,8 @@ build-jdk:
   tags:
     - kent-yuria
   script:
+    - sudo apt-get update
+    - sudo apt-get install -y libasound2-dev
     - git clone --branch survivor https://github.com/Suppenschale/jdk.git jdk
     - cd jdk
     - bash configure
