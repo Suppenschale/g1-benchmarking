@@ -8,6 +8,12 @@ benchmark:
 
   timeout: 2 days
 
+  artifacts:
+    when: always
+    paths:
+      - results/
+    expire_in: 30 days
+
   script:
     - echo "Extracting custom JDK"
     - tar -xzf jdk/my-jdk.tar.gz
