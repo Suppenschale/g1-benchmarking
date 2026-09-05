@@ -14,4 +14,32 @@ benchmark:
     - ./jdk/bin/java -version
 
     - cd benchmarks
-    - ./run.sh
+
+    - echo "Checking DaCapo"
+    - |
+      if [ ! -f "dacapo-23.11-chopin.jar" ] || [ ! -d "dacapo-23.11-chopin" ]; then
+        echo "DaCapo not found. Downloading..."
+        wget -O dacapo.zip \
+          "https://download.dacapobench.org/chopin/dacapo-23.11-chopin.zip"
+        unzip -q dacapo.zip
+        rm dacapo.zip
+      else
+        echo "DaCapo already exists. Skipping download."
+      fi
+
+    - echo "Checking Renaissance"
+    - |
+      if [ ! -f "renaissance-gpl-0.16.1.jar" ]; then
+        echo "Renaissance not found. Downloading..."
+        wget -O renaissance-gpl-0.16.1.jar \
+          "https://github.com/renaissance-benchmarks/renaissance/releases/download/v0.16.1/renaissance-gpl-0.16.1.jar"
+      else
+        echo "Renaissance already exists. Skipping download."
+      fi
+
+    - echo "Benchmark files:"
+    - ls -lh
+    - ls -lh dacapo-23.11-chopin
+
+    - echo "Running benchmarks"
+    - ./benchmark.sh ../jdk

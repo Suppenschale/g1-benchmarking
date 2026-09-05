@@ -16,7 +16,7 @@ mkdir -p "${LOG_DIR}"
 # Logging
 # ============================================================
 
-LOGOPTS="gc=trace,gc_testing=trace"
+LOGOPTS="gc,gc+plab=trace,gc_testing=trace"
 
 # ============================================================
 # Benchmark configurations
@@ -32,7 +32,7 @@ declare -A DACAPO_BENCHES=(
   [graphchi]="175m"
   [h2]="700m"         #"681m"   out of heap
   # [h2o]="72m"                 Does not run on JDK26 (JDK <= 17)
-  [jme]="1G"          #"29m"    out of heap (with -XX:+DisableExplicitGC b
+  [jme]="1000m"       #"29m"    out of heap (with -XX:+DisableExplicitGC b
   [jython]="50m"      #"25m"    runs +60s
   [kafka]="250m"      #"201"    out of heap
   [luindex]="29m"
@@ -81,7 +81,7 @@ CONFIGS=(
 )
 
 # Number of repetitions
-RUNS=10
+RUNS=5
 
 
 # ============================================================
@@ -126,13 +126,13 @@ GC_CSV="${RESULT_DIR}/gc_stats.csv"
 TIMING_CSV="${RESULT_DIR}/timing_stats.csv"
 RUNTIME_CSV="${RESULT_DIR}/runtime_stats.csv"
 
-echo "suite,benchmark,heap,config,iteration,young_gc,full_gc,young_pause_ms,full_pause_ms,total_pause_ms" \
+echo "suite,benchmark,heap,config,structure,iteration,young_gc,full_gc,young_pause_ms,full_pause_ms,total_pause_ms" \
   > "${GC_CSV}"
 
-echo "suite,benchmark,heap,config,iteration,operation,time_ms,result" \
+echo "suite,benchmark,heap,config,structure,iteration,operation,gen,size,time_us,result" \
   > "${TIMING_CSV}"
 
-echo "suite,benchmark,heap,config,iteration,time_ms" \
+echo "suite,benchmark,heap,config,structure,iteration,time_ms" \
   > "${RUNTIME_CSV}"
 
 
@@ -146,7 +146,8 @@ parse_timing() {
   local benchmark="$2"
   local heap="$3"
   local config="$4"
-  local log="$5"
+  local structure="$5"
+  local log="$6"
 
 
   if [[ "${suite}" == "dacapo" ]]; then
@@ -171,7 +172,8 @@ parse_timing() {
       -v suite="${suite}" \
       -v benchmark="${benchmark}" \
       -v heap="${heap}" \
-      -v config="${config}" '
+      -v config="${config}" \
+      -v structure="${structure}" '
 
       BEGIN {
         iteration = ""
@@ -218,18 +220,23 @@ parse_timing() {
 
         n = split(timing, fields, ":")
 
-        if (n >= 4) {
+        if (n >= 5) {
 
-          operation = fields[1] ":" fields[2]
-          time_ms   = fields[3]
-          result    = fields[4]
+          operator  = fields[1]
+          gen       = fields[2]
+          size      = fields[3]
+          time_ms   = fields[4]
+          result    = fields[5]
 
           print suite "," \
                 benchmark "," \
                 heap "," \
                 config "," \
+                structure "," \
                 iteration "," \
-                operation "," \
+                operator "," \
+                gen "," \
+                size "," \
                 time_ms "," \
                 result
         }
@@ -258,7 +265,8 @@ parse_timing() {
       -v suite="${suite}" \
       -v benchmark="${benchmark}" \
       -v heap="${heap}" \
-      -v config="${config}" '
+      -v config="${config}" \
+      -v structure="${structure}" '
 
       BEGIN {
         iteration = ""
@@ -297,18 +305,23 @@ parse_timing() {
 
         n = split(timing, fields, ":")
 
-        if (n >= 4) {
+        if (n >= 5) {
 
-          operation = fields[1] ":" fields[2]
-          time_ms   = fields[3]
-          result    = fields[4]
+          operator  = fields[1]
+          gen       = fields[2]
+          size      = fields[3]
+          time_ms   = fields[4]
+          result    = fields[5]
 
           print suite "," \
                 benchmark "," \
                 heap "," \
                 config "," \
+                structure "," \
                 iteration "," \
-                operation "," \
+                operator "," \
+                gen "," \
+                size "," \
                 time_ms "," \
                 result
         }
@@ -330,7 +343,8 @@ parse_runtime() {
   local benchmark="$2"
   local heap="$3"
   local config="$4"
-  local log="$5"
+  local structure="$5"
+  local log="$6"
 
 
   if [[ "${suite}" == "dacapo" ]]; then
@@ -351,7 +365,8 @@ parse_runtime() {
       -v suite="${suite}" \
       -v benchmark="${benchmark}" \
       -v heap="${heap}" \
-      -v config="${config}" '
+      -v config="${config}" \
+      -v structure="${structure}" '
 
       /===== DaCapo .* completed warmup [0-9]+ in [0-9]+ msec =====/ {
 
@@ -376,6 +391,7 @@ parse_runtime() {
                 benchmark "," \
                 heap "," \
                 config "," \
+                structure "," \
                 iteration "," \
                 time_ms
         }
@@ -405,6 +421,7 @@ parse_runtime() {
                 benchmark "," \
                 heap "," \
                 config "," \
+                structure "," \
                 iteration "," \
                 time_ms
         }
@@ -431,7 +448,8 @@ parse_runtime() {
       -v suite="${suite}" \
       -v benchmark="${benchmark}" \
       -v heap="${heap}" \
-      -v config="${config}" '
+      -v config="${config}" \
+      -v structure="${structure}" '
 
       /iteration [0-9]+ completed \([0-9]+\.[0-9]+ ms\)/ {
 
@@ -458,6 +476,7 @@ parse_runtime() {
                 benchmark "," \
                 heap "," \
                 config "," \
+                structure "," \
                 iteration "," \
                 time_ms
         }
@@ -481,7 +500,8 @@ parse_gc() {
   local benchmark="$2"
   local heap="$3"
   local config="$4"
-  local log="$5"
+  local structure="$5"
+  local log="$6"
 
 
   if [[ "${suite}" == "dacapo" ]]; then
@@ -496,7 +516,8 @@ parse_gc() {
       -v suite="${suite}" \
       -v benchmark="${benchmark}" \
       -v heap="${heap}" \
-      -v config="${config}" '
+      -v config="${config}" \
+      -v structure="${structure}" '
 
       BEGIN {
 
@@ -543,7 +564,7 @@ parse_gc() {
 
         for (i = 1; i <= NF; i++) {
 
-          if ($i ~ /^[0-9]+\.[0-9]+ms$/) {
+          if ($i ~ /^[0-9]+(\.[0-9]+)?ms$/) {
 
             value = $i
             sub(/ms$/, "", value)
@@ -567,7 +588,7 @@ parse_gc() {
 
         for (i = 1; i <= NF; i++) {
 
-          if ($i ~ /^[0-9]+\.[0-9]+ms$/) {
+          if ($i ~ /^[0-9]+(\.[0-9]+)?ms$/) {
 
             value = $i
             sub(/ms$/, "", value)
@@ -591,11 +612,12 @@ parse_gc() {
           total = young_pause[iteration_name] + \
                   full_pause[iteration_name]
 
-          printf "%s,%s,%s,%s,%s,%d,%d,%.6f,%.6f,%.6f\n", \
+          printf "%s,%s,%s,%s,%s,%s,%d,%d,%.6f,%.6f,%.6f\n", \
             suite, \
             benchmark, \
             heap, \
             config, \
+            structure, \
             iteration_name, \
             young_count[iteration_name] + 0, \
             full_count[iteration_name] + 0, \
@@ -608,11 +630,12 @@ parse_gc() {
         total = young_pause["measurement"] + \
                 full_pause["measurement"]
 
-        printf "%s,%s,%s,%s,measurement,%d,%d,%.6f,%.6f,%.6f\n", \
+        printf "%s,%s,%s,%s,%s,measurement,%d,%d,%.6f,%.6f,%.6f\n", \
           suite, \
           benchmark, \
           heap, \
           config, \
+          structure, \
           young_count["measurement"] + 0, \
           full_count["measurement"] + 0, \
           young_pause["measurement"] + 0, \
@@ -633,7 +656,8 @@ parse_gc() {
       -v suite="${suite}" \
       -v benchmark="${benchmark}" \
       -v heap="${heap}" \
-      -v config="${config}" '
+      -v config="${config}" \
+      -v structure="${structure}" '
 
       BEGIN {
 
@@ -672,7 +696,7 @@ parse_gc() {
 
         for (i = 1; i <= NF; i++) {
 
-          if ($i ~ /^[0-9]+\.[0-9]+ms$/) {
+          if ($i ~ /^[0-9]+(\.[0-9]+)?ms$/) {
 
             value = $i
             sub(/ms$/, "", value)
@@ -696,7 +720,7 @@ parse_gc() {
 
         for (i = 1; i <= NF; i++) {
 
-          if ($i ~ /^[0-9]+\.[0-9]+ms$/) {
+          if ($i ~ /^[0-9]+(\.[0-9]+)?ms$/) {
 
             value = $i
             sub(/ms$/, "", value)
@@ -717,11 +741,12 @@ parse_gc() {
 
           total = young_pause[i] + full_pause[i]
 
-          printf "%s,%s,%s,%s,%d,%d,%d,%.6f,%.6f,%.6f\n", \
+          printf "%s,%s,%s,%s,%s,%d,%d,%d,%.6f,%.6f,%.6f\n", \
             suite, \
             benchmark, \
             heap, \
             config, \
+            structure, \
             i, \
             young_count[i] + 0, \
             full_count[i] + 0, \
@@ -747,13 +772,15 @@ parse_log() {
   local benchmark="$2"
   local heap="$3"
   local config="$4"
-  local log="$5"
+  local structure="$5"
+  local log="$6"
 
   parse_timing \
     "${suite}" \
     "${benchmark}" \
     "${heap}" \
     "${config}" \
+    "${structure}" \
     "${log}"
 
   parse_runtime \
@@ -761,6 +788,7 @@ parse_log() {
     "${benchmark}" \
     "${heap}" \
     "${config}" \
+    "${structure}" \
     "${log}"
 
   parse_gc \
@@ -768,6 +796,7 @@ parse_log() {
     "${benchmark}" \
     "${heap}" \
     "${config}" \
+    "${structure}" \
     "${log}"
 }
 
@@ -781,11 +810,18 @@ run_dacapo() {
   local benchmark="$1"
   local heap="$2"
   local config="$3"
+  local structure="$4"
 
   local gc_flags
   gc_flags=$(get_gc_flags "${config}")
 
-  local log="${LOG_DIR}/dacapo_${benchmark}_${heap}_${config}.log"
+  local structure_flag=""
+
+  if [[ "${structure}" != "default" ]]; then
+    structure_flag="-XX:G1HoleDataStructure=${structure}"
+  fi
+
+  local log="${LOG_DIR}/dacapo_${benchmark}_${heap}_${config}_structure${structure}.log"
 
 
   echo
@@ -811,6 +847,7 @@ run_dacapo() {
     -Xmx"${heap}" \
     -Xms"${heap}" \
     ${gc_flags} \
+    ${structure_flag} \
     -Xlog:${LOGOPTS} \
     -jar "${DACAPO_JAR}" \
     -n "${RUNS}" \
@@ -829,6 +866,7 @@ run_dacapo() {
     "${benchmark}" \
     "${heap}" \
     "${config}" \
+    "${structure}" \
     "${log}"
 }
 
@@ -842,11 +880,18 @@ run_renaissance() {
   local benchmark="$1"
   local heap="$2"
   local config="$3"
+  local structure="$4"
 
   local gc_flags
   gc_flags=$(get_gc_flags "${config}")
 
-  local log="${LOG_DIR}/renaissance_${benchmark}_${heap}_${config}.log"
+  local structure_flag=""
+
+  if [[ "${structure}" != "default" ]]; then
+    structure_flag="-XX:G1HoleDataStructure=${structure}"
+  fi
+
+  local log="${LOG_DIR}/renaissance_${benchmark}_${heap}_${config}_structure${structure}.log"
 
 
   echo
@@ -872,6 +917,7 @@ run_renaissance() {
     -Xmx"${heap}" \
     -Xms"${heap}" \
     ${gc_flags} \
+    ${structure_flag} \
     -Xlog:${LOGOPTS} \
     -jar "${RENAISSANCE_JAR}" \
     -r "${RUNS}" \
@@ -890,6 +936,7 @@ run_renaissance() {
     "${benchmark}" \
     "${heap}" \
     "${config}" \
+    "${structure}" \
     "${log}"
 }
 
@@ -911,17 +958,23 @@ for benchmark in "${!DACAPO_BENCHES[@]}"; do
 
   for config in "${CONFIGS[@]}"; do
 
+    for structure in 0 1 2; do
+
     # Original heap
     run_dacapo \
       "${benchmark}" \
       "${heap}" \
-      "${config}"
+      "${config}" \
+      "${structure}"
 
     # Doubled heap
     run_dacapo \
       "${benchmark}" \
       "${doubled_heap}" \
-      "${config}"
+      "${config}" \
+      "${structure}"
+
+    done
 
   done
 done
@@ -942,19 +995,25 @@ for benchmark in "${!RENAISSANCE_BENCHES[@]}"; do
   doubled_heap=$(double_heap "${heap}")
 
 
-  for config in "${CONFIGS[@]}"; do
+  for config in "${CONFIGS[@]}"; do    
 
-    # Original heap
-    run_renaissance \
-      "${benchmark}" \
-      "${heap}" \
-      "${config}"
+    for structure in 0 1 2; do
 
-    # Doubled heap
-    run_renaissance \
-      "${benchmark}" \
-      "${doubled_heap}" \
-      "${config}"
+        # Original heap
+        run_renaissance \
+        "${benchmark}" \
+        "${heap}" \
+        "${config}" \
+        "${structure}"
+
+        # Doubled heap
+        run_renaissance \
+        "${benchmark}" \
+        "${doubled_heap}" \
+        "${config}" \
+        "${structure}"
+
+    done
 
   done
 done
@@ -984,4 +1043,3 @@ echo "  ${RUNTIME_CSV}"
 echo
 echo "Individual logs:"
 echo "  ${LOG_DIR}"
-```
