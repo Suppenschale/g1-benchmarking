@@ -6,6 +6,8 @@ benchmark:
   tags:
     - kent-yuria
 
+  timeout: 2 days
+
   script:
     - echo "Extracting custom JDK"
     - tar -xzf jdk/my-jdk.tar.gz
