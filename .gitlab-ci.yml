@@ -27,7 +27,7 @@ benchmark:
     - |
       if [ ! -f "dacapo-23.11-chopin.jar" ] || [ ! -d "dacapo-23.11-chopin" ]; then
         echo "DaCapo not found. Downloading..."
-        wget -O dacapo.zip \
+        wget --no-verbose -O dacapo.zip \
           "https://download.dacapobench.org/chopin/dacapo-23.11-chopin.zip"
         unzip -q dacapo.zip
         rm dacapo.zip
@@ -39,7 +39,7 @@ benchmark:
     - |
       if [ ! -f "renaissance-gpl-0.16.1.jar" ]; then
         echo "Renaissance not found. Downloading..."
-        wget -O renaissance-gpl-0.16.1.jar \
+        wget --no-verbose -O renaissance-gpl-0.16.1.jar \
           "https://github.com/renaissance-benchmarks/renaissance/releases/download/v0.16.1/renaissance-gpl-0.16.1.jar"
       else
         echo "Renaissance already exists. Skipping download."
