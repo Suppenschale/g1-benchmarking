@@ -24,55 +24,55 @@ LOGOPTS="gc,gc+plab=trace,gc_testing=trace"
 
 declare -A DACAPO_BENCHES=(
   [avrora]="5m"
- # [batik]="175m"
-  #[biojava]="150m"    #93m"     runs +60s
+  [batik]="175m"
+  [biojava]="150m"    #93m"     runs +60s
 # [cassandra]="174m"            Does not run on JKD26 (no security manager)
-  #[eclipse]="135m"
-  #[fop]="20m"         #13m      out of heap
-  #[graphchi]="175m"
-  #[h2]="700m"         #"681m"   out of heap
+  [eclipse]="135m"
+  [fop]="20m"         #13m      out of heap
+  [graphchi]="175m"
+  [h2]="700m"         #"681m"   out of heap
   # [h2o]="72m"                 Does not run on JDK26 (JDK <= 17)
-  #[jme]="1000m"       #"29m"    out of heap (with -XX:+DisableExplicitGC b
-  #[jython]="50m"      #"25m"    runs +60s
-  #[kafka]="250m"      #"201"    out of heap
-  #[luindex]="29m"
-  #[lusearch]="30m"    #"19m"    runs +60s
-  #[pmd]="191m"
-  #[spring]="55m"
-  #[sunflow]="33m"
-  #[tomcat]="21m"
+  [jme]="1000m"       #"29m"    out of heap (with -XX:+DisableExplicitGC b
+  [jython]="50m"      #"25m"    runs +60s
+  [kafka]="250m"      #"201"    out of heap
+  [luindex]="29m"
+  [lusearch]="30m"    #"19m"    runs +60s
+  [pmd]="191m"
+  [spring]="55m"
+  [sunflow]="33m"
+  [tomcat]="21m"
   #[tradebeans]="135m"          Does not run on JKD26 (java.lang.UnsupportedOperationException: Setting a system-wide Policy object is not supported)
   #[tradesoap]="91m"            Does not run on JKD26 (java.lang.UnsupportedOperationException: Setting a system-wide Policy object is not supported)
-  #[xalan]="13m"
-  #[zxing]="183m"
+  [xalan]="13m"
+  [zxing]="183m"
 )
 
 declare -A RENAISSANCE_BENCHES=(
-  #[akka-uct]="512m" 
-  #[als]="512m"
-  #[chi-square]="512m"
-  #[db-shootout]="96m" 
-  #[dec-tree]="512m"
-  #[dotty]="64m"
-  #[finagle-chirper]="1024m"
-  #[finagle-http]="96m"
-  #[fj-kmeans]="128m"
-  #[future-genetic]="16m"
-  #[gauss-mix]="512m"
-  #[log-regression]="512m"
-  #[mnemonics]="48m"
-  #[movie-lens]="512m"
-  #[naive-bayes]="1536m"
-  #[neo4j-analytics]="1536m"
-  #[page-rank]="768m"
-  #[par-mnemonics]="48m"
-  #[philosophers]="16m"
-  #[reactors]="512m"
-  #[rx-scrabble]="48m"
-  #[scala-doku]="48m"
-  #[scala-kmeans]="32m"
-  #[scala-stm-bench7]="512m"
-  #[scrabble]="128m"
+  [akka-uct]="512m" 
+  [als]="512m"
+  [chi-square]="512m"
+  [db-shootout]="96m" 
+  [dec-tree]="512m"
+  [dotty]="64m"
+  [finagle-chirper]="1024m"
+  [finagle-http]="96m"
+  [fj-kmeans]="128m"
+  [future-genetic]="16m"
+  [gauss-mix]="512m"
+  [log-regression]="512m"
+  [mnemonics]="48m"
+  [movie-lens]="512m"
+  [naive-bayes]="1536m"
+  [neo4j-analytics]="1536m"
+  [page-rank]="768m"
+  [par-mnemonics]="48m"
+  [philosophers]="16m"
+  [reactors]="512m"
+  [rx-scrabble]="48m"
+  [scala-doku]="48m"
+  [scala-kmeans]="32m"
+  [scala-stm-bench7]="512m"
+  [scrabble]="128m"
 )
 
 CONFIGS=(
@@ -959,8 +959,17 @@ for benchmark in "${!DACAPO_BENCHES[@]}"; do
 
     if [[ "${config}" == "baseline" ]]; then
       # Baseline: both heap sizes, but only one run each
-      run_dacapo "${benchmark}" "${heap}" "${config}"
-      run_dacapo "${benchmark}" "${doubled_heap}" "${config}"
+      run_dacapo \
+        "${benchmark}" \
+        "${heap}" \
+        "${config}" \
+        0
+
+      run_dacapo \
+        "${benchmark}" \
+        "${doubled_heap}" \
+        "${config}" \
+        0
 
     else
       # Other configurations: both heap sizes for every structure
@@ -1004,12 +1013,14 @@ for benchmark in "${!RENAISSANCE_BENCHES[@]}"; do
       run_renaissance \
         "${benchmark}" \
         "${heap}" \
-        "${config}"
+        "${config}" \
+        0
 
       run_renaissance \
         "${benchmark}" \
         "${doubled_heap}" \
-        "${config}"
+        "${config}" \
+        0
 
     else
       # Other configurations: both heap sizes for every structure
