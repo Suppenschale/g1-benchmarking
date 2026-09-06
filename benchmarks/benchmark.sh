@@ -955,26 +955,29 @@ for benchmark in "${!DACAPO_BENCHES[@]}"; do
   heap="${DACAPO_BENCHES[$benchmark]}"
   doubled_heap=$(double_heap "${heap}")
 
-
   for config in "${CONFIGS[@]}"; do
 
-    for structure in 0 1 2; do
+    if [[ "${config}" == "baseline" ]]; then
+      # Baseline: both heap sizes, but only one run each
+      run_dacapo "${benchmark}" "${heap}" "${config}"
+      run_dacapo "${benchmark}" "${doubled_heap}" "${config}"
 
-    # Original heap
-    run_dacapo \
-      "${benchmark}" \
-      "${heap}" \
-      "${config}" \
-      "${structure}"
+    else
+      # Other configurations: both heap sizes for every structure
+      for structure in 0 1 2; do
+        run_dacapo \
+          "${benchmark}" \
+          "${heap}" \
+          "${config}" \
+          "${structure}"
 
-    # Doubled heap
-    run_dacapo \
-      "${benchmark}" \
-      "${doubled_heap}" \
-      "${config}" \
-      "${structure}"
-
-    done
+        run_dacapo \
+          "${benchmark}" \
+          "${doubled_heap}" \
+          "${config}" \
+          "${structure}"
+      done
+    fi
 
   done
 done
@@ -994,26 +997,40 @@ for benchmark in "${!RENAISSANCE_BENCHES[@]}"; do
   heap="${RENAISSANCE_BENCHES[$benchmark]}"
   doubled_heap=$(double_heap "${heap}")
 
+  for config in "${CONFIGS[@]}"; do
 
-  for config in "${CONFIGS[@]}"; do    
+    if [[ "${config}" == "baseline" ]]; then
+      # Baseline: both heap sizes, but only one run each
+      run_renaissance \
+        "${benchmark}" \
+        "${heap}" \
+        "${config}"
 
-    for structure in 0 1 2; do
+      run_renaissance \
+        "${benchmark}" \
+        "${doubled_heap}" \
+        "${config}"
+
+    else
+      # Other configurations: both heap sizes for every structure
+      for structure in 0 1 2; do
 
         # Original heap
         run_renaissance \
-        "${benchmark}" \
-        "${heap}" \
-        "${config}" \
-        "${structure}"
+          "${benchmark}" \
+          "${heap}" \
+          "${config}" \
+          "${structure}"
 
         # Doubled heap
         run_renaissance \
-        "${benchmark}" \
-        "${doubled_heap}" \
-        "${config}" \
-        "${structure}"
+          "${benchmark}" \
+          "${doubled_heap}" \
+          "${config}" \
+          "${structure}"
 
-    done
+      done
+    fi
 
   done
 done
