@@ -24,7 +24,7 @@ LOGOPTS="gc,gc+plab=trace,gc_testing=trace"
 
 declare -A DACAPO_BENCHES=(
   [avrora]="5m"
-  [batik]="175m"
+  [batik]="200m"       #"175m"   out of heap      
   [biojava]="150m"    #93m"     runs +60s
 # [cassandra]="174m"            Does not run on JKD26 (no security manager)
   [eclipse]="135m"
@@ -78,6 +78,7 @@ declare -A RENAISSANCE_BENCHES=(
 CONFIGS=(
   "baseline"
   "survivor"
+  "humongous"
 )
 
 # Number of repetitions
@@ -107,6 +108,20 @@ get_gc_flags() {
 
     survivor)
       echo "-XX:+G1UseSurvivorHoles"
+      ;;
+
+    humongous)
+      echo "-XX:+G1UseHumongousHoles"
+      ;;
+
+    old)
+      echo "-XX:+G1UseOldHoles"
+      ;;
+
+    all)
+      echo "-XX:+G1UseSurvivorHoles"
+      echo "-XX:+G1UseHumongousHoles"
+      echo "-XX:+G1UseOldHoles"
       ;;
 
     *)
@@ -605,7 +620,7 @@ parse_gc() {
 
       END {
 
-        for (i = 1; i <= 9; i++) {
+        for (i = 1; i <= 4; i++) {
 
           iteration_name = "warmup_" i
 
@@ -737,7 +752,7 @@ parse_gc() {
 
       END {
 
-        for (i = 0; i < 10; i++) {
+        for (i = 0; i < 5; i++) {
 
           total = young_pause[i] + full_pause[i]
 
@@ -972,20 +987,17 @@ for benchmark in "${!DACAPO_BENCHES[@]}"; do
         0
 
     else
-      # Other configurations: both heap sizes for every structure
-      for structure in 0 1 2; do
-        run_dacapo \
-          "${benchmark}" \
-          "${heap}" \
-          "${config}" \
-          "${structure}"
+      run_dacapo \
+        "${benchmark}" \
+        "${heap}" \
+        "${config}" \
+        2
 
-        run_dacapo \
-          "${benchmark}" \
-          "${doubled_heap}" \
-          "${config}" \
-          "${structure}"
-      done
+      run_dacapo \
+        "${benchmark}" \
+        "${doubled_heap}" \
+        "${config}" \
+        2
     fi
 
   done
@@ -1023,24 +1035,19 @@ for benchmark in "${!RENAISSANCE_BENCHES[@]}"; do
         0
 
     else
-      # Other configurations: both heap sizes for every structure
-      for structure in 0 1 2; do
+      run_renaissance \
+        "${benchmark}" \
+        "${heap}" \
+        "${config}" \
+        2
 
-        # Original heap
-        run_renaissance \
-          "${benchmark}" \
-          "${heap}" \
-          "${config}" \
-          "${structure}"
+      # Doubled heap
+      run_renaissance \
+        "${benchmark}" \
+        "${doubled_heap}" \
+        "${config}" \
+        2
 
-        # Doubled heap
-        run_renaissance \
-          "${benchmark}" \
-          "${doubled_heap}" \
-          "${config}" \
-          "${structure}"
-
-      done
     fi
 
   done
