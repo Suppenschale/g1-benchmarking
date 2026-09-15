@@ -852,6 +852,7 @@ run_dacapo() {
 
   set +e
 
+  timeout --signal=TERM --kill-after=30 600 \
   "${JAVA}/bin/java" \
     -XX:+UnlockDiagnosticVMOptions \
     -XX:+UnlockExperimentalVMOptions \
@@ -922,6 +923,7 @@ run_renaissance() {
 
   set +e
 
+  timeout --signal=TERM --kill-after=30 600 \
   "${JAVA}/bin/java" \
     -XX:+UnlockDiagnosticVMOptions \
     -XX:+UnlockExperimentalVMOptions \
