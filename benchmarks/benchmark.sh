@@ -79,6 +79,7 @@ CONFIGS=(
   "baseline"
   "survivor"
   "humongous"
+  "old"
 )
 
 # Number of repetitions
